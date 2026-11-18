@@ -2,6 +2,7 @@ import { ArrowDownUp, CloudOff, Download, FileSpreadsheet, FileUp, LogOut, Refre
 import { useRef, useState } from 'react'
 import { useAuth } from '../lib/auth'
 import { backupToCsv, buildBackup, downloadText, importBackup } from '../lib/exportImport'
+import { supabaseConfigProblem } from '../lib/supabase'
 import { syncNow } from '../lib/sync'
 import { todayStr } from '../lib/dates'
 import { useTheme } from '../lib/theme'
@@ -96,7 +97,11 @@ export function SettingsSheet({ open, onClose, onCategories, onReorder }: Props)
             {local ? (
               <p className="flex items-start gap-2 text-sm leading-relaxed">
                 <CloudOff size={18} className="mt-0.5 shrink-0 text-[#f59e0b]" />
-                <span>Supabase ist nicht konfiguriert. Die Daten bleiben nur auf diesem Gerät. Siehe README, Schritt „Umgebungsvariablen“.</span>
+                <span>
+                  {supabaseConfigProblem === 'secret-key'
+                    ? 'Der hinterlegte Supabase-Key ist ein geheimer Key (service_role). Er wird aus Sicherheitsgründen nicht verwendet. Bitte den anon / publishable Key eintragen.'
+                    : 'Supabase ist nicht konfiguriert. Die Daten bleiben nur auf diesem Gerät. Siehe README, Schritt „Umgebungsvariablen“.'}
+                </span>
               </p>
             ) : (
               <div className="text-sm">
