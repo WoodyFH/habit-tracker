@@ -63,7 +63,7 @@ function Inner({ habit, date, completion, onClose }: { habit: Habit; date: DateS
           <Field label="Wert" hint={`Ziel: ${counterTarget(habit)} ${habit.unit ?? ''}`}>
             <div className="flex items-center justify-between rounded-2xl bg-soft p-3">
               <Stepper value={value} min={0} max={99999} color={hex} suffix={habit.unit ?? undefined} onChange={setValue} />
-              <Button size="sm" onClick={() => setValue(counterTarget(habit))}>
+              <Button size="sm" className="!bg-soft-raw" onClick={() => setValue(counterTarget(habit))}>
                 Ziel
               </Button>
             </div>

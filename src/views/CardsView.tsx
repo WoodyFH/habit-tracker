@@ -9,13 +9,12 @@ interface Props {
   filtered: boolean
   onEdit: (h: Habit) => void
   onDay: (h: Habit, date: DateStr) => void
+  onHistory: (h: Habit) => void
   onNew: () => void
 }
 
-export function CardsView({ habits, filtered, onEdit, onDay, onNew }: Props) {
+export function CardsView({ habits, filtered, onEdit, onDay, onHistory, onNew }: Props) {
   const data = useData()
-  const catName = useMemo(() => new Map(data.categories.map((c) => [c.id, c.name])), [data.categories])
-
   const summary = useMemo(() => {
     let due = 0
     let done = 0
@@ -49,26 +48,25 @@ export function CardsView({ habits, filtered, onEdit, onDay, onNew }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {summary.due > 0 && (
-        <div className="rounded-3xl bg-card p-4 shadow-card" role="status">
+        <div className="rounded-3xl bg-card px-4 py-3 shadow-card" role="status">
           <div className="flex items-baseline justify-between">
             <span className="text-sm font-semibold">{summary.done === summary.due ? 'Alles erledigt 🎉' : 'Heute'}</span>
             <span className="text-sm font-bold tabular-nums">
               {summary.done} von {summary.due}
             </span>
           </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-soft" aria-hidden="true">
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-soft" aria-hidden="true">
             <div className="h-full rounded-full bg-[#6366f1] transition-all duration-500" style={{ width: `${(summary.done / summary.due) * 100}%` }} />
           </div>
         </div>
       )}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
         {habits.map((h) => {
           const ctx = data.ctxById.get(h.id)
           if (!ctx) return null
-          const names = (data.categoryIdsByHabit.get(h.id) ?? []).map((id) => catName.get(id)).filter(Boolean) as string[]
-          return <HabitCard key={h.id} habit={h} ctx={ctx} today={data.today} categoryNames={names} onEdit={() => onEdit(h)} onDay={(d) => onDay(h, d)} />
+          return <HabitCard key={h.id} habit={h} ctx={ctx} today={data.today} onEdit={() => onEdit(h)} onDay={(d) => onDay(h, d)} onHistory={() => onHistory(h)} />
         })}
       </div>
     </div>

@@ -198,3 +198,31 @@ export const DEFAULT_ICON = 'check'
 export function iconComponent(key: string): LucideIcon {
   return (ICONS[key] ?? ICONS[DEFAULT_ICON]).icon
 }
+
+/** Heller Farbton der Gewohnheitsfarbe auf dem Kartenhintergrund (für leere Felder, Icon-Hintergründe). */
+export function tint(hex: string, percent: number, base = 'var(--card)'): string {
+  return `color-mix(in srgb, ${hex} ${percent}%, ${base})`
+}
+
+export interface CellLook {
+  background: string
+  border: string
+  /** Textfarbe für Inhalte (Haken, Zahl) */
+  color: string
+}
+
+/** Einheitliche Darstellung eines Tagesfelds (Karte, Wochenliste, Tabelle, Kalender). */
+export function cellLook(status: 'done' | 'partial' | 'missed' | 'open' | 'neutral' | 'future', hex: string): CellLook {
+  switch (status) {
+    case 'done':
+      return { background: hex, border: 'none', color: onColor(hex) }
+    case 'partial':
+      return { background: tint(hex, 42), border: 'none', color: 'var(--ink)' }
+    case 'neutral':
+      return { background: 'transparent', border: `1.5px dashed ${tint(hex, 28)}`, color: 'var(--muted)' }
+    case 'future':
+      return { background: tint(hex, 5), border: 'none', color: 'var(--muted)' }
+    default:
+      return { background: tint(hex, 14), border: 'none', color: tint(hex, 70, 'var(--muted)') }
+  }
+}

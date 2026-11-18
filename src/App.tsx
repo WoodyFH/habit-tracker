@@ -5,6 +5,7 @@ import { CategorySheet } from './components/CategorySheet'
 import { DaySheet } from './components/DaySheet'
 import { FilterSheet } from './components/FilterSheet'
 import { HabitEditor } from './components/HabitEditor'
+import { HistorySheet } from './components/HistorySheet'
 import { LoginScreen } from './components/LoginScreen'
 import { ReorderSheet } from './components/ReorderSheet'
 import { SettingsSheet } from './components/SettingsSheet'
@@ -59,6 +60,7 @@ function Main() {
   const [prefs, update] = usePrefs()
   const [editor, setEditor] = useState<{ open: boolean; habit?: Habit }>({ open: false })
   const [day, setDay] = useState<{ habit: Habit; date: DateStr } | null>(null)
+  const [history, setHistory] = useState<Habit | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
   const [statsOpen, setStatsOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -85,32 +87,27 @@ function Main() {
     <div className="pl-safe pr-safe min-h-dvh">
       {/* Kopfzeile */}
       <header className="pt-safe sticky top-0 z-30 bg-[color-mix(in_srgb,var(--bg)_88%,transparent)] backdrop-blur-xl">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 pt-3 pb-2">
+        <div className="mx-auto flex max-w-5xl items-center gap-2 px-4 pt-2.5 pb-1.5">
           <IconButton label="Einstellungen" onClick={() => setSettingsOpen(true)}>
-            <Settings size={21} />
+            <Settings size={19} />
           </IconButton>
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[22px] leading-tight font-extrabold tracking-tight">Heute</h1>
-            <div className="flex items-center gap-1">
-              <span className="truncate text-[12.5px] text-muted">{formatMedDE(data.today)}</span>
-            </div>
+          <div className="min-w-0 flex-1 pl-1.5 leading-tight">
+            <div className="truncate text-[12.5px] font-semibold text-muted">{formatMedDE(data.today)}</div>
+            <SyncBadge onClick={() => setSettingsOpen(true)} />
           </div>
           <IconButton label="Filter" onClick={() => setFilterOpen(true)} className="relative">
-            <SlidersHorizontal size={20} />
-            {filtersActive && <span className="absolute top-2 right-2 size-2.5 rounded-full bg-[#6366f1] ring-2 ring-[var(--card)]" />}
+            <SlidersHorizontal size={18} />
+            {filtersActive && <span className="absolute top-1.5 right-1.5 size-2.5 rounded-full bg-[#6366f1] ring-2 ring-[var(--card)]" />}
           </IconButton>
           <IconButton label="Statistik" onClick={() => setStatsOpen(true)}>
-            <BarChart3 size={20} />
+            <BarChart3 size={18} />
           </IconButton>
           <IconButton label="Neue Gewohnheit" onClick={openNew} className="!bg-[#6366f1] !text-white">
-            <Plus size={24} strokeWidth={2.6} />
+            <Plus size={22} strokeWidth={2.6} />
           </IconButton>
         </div>
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 pb-1">
-          <SyncBadge onClick={() => setSettingsOpen(true)} />
-        </div>
         {data.categories.length > 0 && (
-          <nav aria-label="Kategorien" className="no-scrollbar mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 pt-1 pb-3">
+          <nav aria-label="Kategorien" className="no-scrollbar mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 pt-0.5 pb-2.5">
             <Chip active={activeCats.length === 0} onClick={() => update({ categoryIds: [] })}>
               Alle
             </Chip>
@@ -124,13 +121,13 @@ function Main() {
       </header>
 
       {/* Inhalt */}
-      <main className={cx('mx-auto px-4 pt-2 pb-36', prefs.view === 'cards' ? 'max-w-5xl' : prefs.view === 'week' ? 'max-w-xl' : 'max-w-4xl')}>
+      <main className={cx('mx-auto px-4 pt-1.5 pb-28', prefs.view === 'cards' ? 'max-w-5xl' : prefs.view === 'week' ? 'max-w-xl' : 'max-w-4xl')}>
         {!data.ready ? (
           <p className="py-20 text-center text-sm text-muted" role="status">
             Lade Daten …
           </p>
         ) : prefs.view === 'cards' ? (
-          <CardsView habits={visible} filtered={filtersActive} onEdit={openEdit} onDay={openDay} onNew={openNew} />
+          <CardsView habits={visible} filtered={filtersActive} onEdit={openEdit} onDay={openDay} onHistory={setHistory} onNew={openNew} />
         ) : prefs.view === 'week' ? (
           <WeekView habits={visible} prefs={prefs} update={update} onEdit={openEdit} onDay={openDay} />
         ) : (
@@ -138,37 +135,31 @@ function Main() {
         )}
       </main>
 
-      {/* Schwebende Leiste + Aktionsbutton */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center gap-3 px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
-        <nav aria-label="Ansicht" className="pointer-events-auto flex gap-1 rounded-full bg-card p-1.5 shadow-float">
+      {/* Schwebende Leiste */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)' }}>
+        <nav aria-label="Ansicht" className="pointer-events-auto flex gap-1 rounded-full bg-card p-1 shadow-float">
           {NAV.map(({ key, label, icon: Icon }) => {
             const active = prefs.view === key
             return (
               <button
                 key={key}
                 type="button"
+                aria-label={label}
+                title={label}
                 aria-current={active ? 'page' : undefined}
                 onClick={() => update({ view: key })}
-                className={cx('press flex h-12 items-center gap-2 rounded-full px-4 text-sm font-bold', active ? 'bg-[#6366f1] text-white' : 'text-muted')}
+                className={cx('press grid h-11 w-[58px] place-items-center rounded-full', active ? 'bg-soft-raw text-ink' : 'text-muted')}
               >
-                <Icon size={19} />
-                <span className={cx(!active && 'max-[380px]:hidden')}>{label}</span>
+                <Icon size={21} strokeWidth={active ? 2.4 : 2} />
               </button>
             )
           })}
         </nav>
-        <button
-          type="button"
-          aria-label="Neue Gewohnheit"
-          onClick={openNew}
-          className="press pointer-events-auto grid size-[60px] place-items-center rounded-full bg-[#6366f1] text-white shadow-float"
-        >
-          <Plus size={28} strokeWidth={2.6} />
-        </button>
       </div>
 
       <HabitEditor open={editor.open} habit={editor.habit} onClose={() => setEditor({ open: false })} />
       <DaySheet habit={day?.habit ?? null} date={day?.date ?? null} completion={dayCompletion} onClose={() => setDay(null)} />
+      <HistorySheet habit={history} onClose={() => setHistory(null)} onDay={openDay} />
       <FilterSheet
         open={filterOpen}
         onClose={() => setFilterOpen(false)}

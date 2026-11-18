@@ -4,10 +4,11 @@ import { useAuth } from '../lib/auth'
 import { backupToCsv, buildBackup, downloadText, importBackup } from '../lib/exportImport'
 import { syncNow } from '../lib/sync'
 import { todayStr } from '../lib/dates'
+import { useTheme } from '../lib/theme'
 import { useConfirm } from './Confirm'
 import { Sheet } from './Sheet'
 import { syncLabel, usePendingCount, useSyncSnapshot } from './SyncBadge'
-import { Button, Field } from './ui'
+import { Button, Field, Segmented } from './ui'
 
 interface Props {
   open: boolean
@@ -21,6 +22,7 @@ export function SettingsSheet({ open, onClose, onCategories, onReorder }: Props)
   const confirm = useConfirm()
   const snap = useSyncSnapshot()
   const pending = usePendingCount()
+  const [theme, setTheme] = useTheme()
   const fileRef = useRef<HTMLInputElement>(null)
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
 
@@ -74,7 +76,21 @@ export function SettingsSheet({ open, onClose, onCategories, onReorder }: Props)
 
   return (
     <Sheet open={open} onClose={onClose} title="Einstellungen" size="tall">
-      <div className="space-y-7">
+      <div className="space-y-6">
+        <Field label="Darstellung">
+          <Segmented
+            label="Darstellung"
+            value={theme}
+            onChange={setTheme}
+            options={[
+              { value: 'auto', label: 'Automatisch' },
+              { value: 'light', label: 'Hell' },
+              { value: 'dark', label: 'Dunkel' },
+            ]}
+          />
+          <p className="pl-1 text-xs text-muted">„Automatisch“ folgt der Einstellung deines Geräts. Gilt nur für dieses Gerät.</p>
+        </Field>
+
         <Field label="Konto & Sync">
           <div className="space-y-3 rounded-3xl bg-soft p-4">
             {local ? (
@@ -129,10 +145,6 @@ export function SettingsSheet({ open, onClose, onCategories, onReorder }: Props)
               {msg.text}
             </p>
           )}
-        </Field>
-
-        <Field label="Darstellung">
-          <p className="text-sm text-muted">Hell oder dunkel richtet sich automatisch nach deinem System.</p>
         </Field>
 
         {!local && (

@@ -110,11 +110,12 @@ export function completionId(habitId: string, date: DateStr): string {
  * Setzt Wert und/oder Notiz eines Tages. value <= 0 ohne Notiz löscht den Eintrag (Soft Delete).
  * Die ID ist deterministisch (habit_id + date) → es gibt pro Tag immer genau eine Zeile, auch wenn
  * mehrere Geräte offline denselben Tag bearbeiten.
+ * Liegt der Tag vor dem Startdatum der Gewohnheit, wird das Startdatum auf diesen Tag vorgezogen.
  */
 export async function setCompletion(habitId: string, date: DateStr, value: number, note?: string | null) {
   const id = completionId(habitId, date)
   const now = nowIso()
-  await db.transaction('rw', db.completions, async () => {
+  await db.transaction('rw', [db.completions, db.habits], async () => {
     const existing = await db.completions.get(id)
     const nextNote = note === undefined ? (existing && !existing.deleted_at ? existing.note : null) : note?.trim() || null
     const remove = !(value > 0) && !nextNote
@@ -131,6 +132,11 @@ export async function setCompletion(habitId: string, date: DateStr, value: numbe
       _dirty: 1,
     }
     await db.completions.put(row)
+    // Rückwirkend eintragen: liegt der Tag vor dem Startdatum, wird der Start auf diesen Tag vorgezogen.
+    if (!remove && value > 0) {
+      const h = await db.habits.get(habitId)
+      if (h && date < h.start_date) await db.habits.update(habitId, { start_date: date, updated_at: now, _dirty: 1 })
+    }
   })
   requestSync()
 }

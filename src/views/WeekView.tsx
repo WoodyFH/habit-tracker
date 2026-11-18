@@ -68,7 +68,7 @@ export function WeekView({ habits, prefs, update, onEdit, onDay }: Props) {
         />
       </div>
 
-      <div ref={ref} className="rounded-[28px] bg-card p-3 shadow-card">
+      <div ref={ref} className="rounded-3xl bg-card p-3 shadow-card">
         {/* Kopfzeile */}
         <div className="flex items-end gap-2 pb-2">
           <div className="min-w-0 flex-1" />
@@ -94,16 +94,16 @@ export function WeekView({ habits, prefs, update, onEdit, onDay }: Props) {
             const hex = colorHex(h.color)
             const isCounter = h.type === 'build' && h.tracking_mode === 'counter'
             return (
-              <li key={h.id} className={`flex items-center gap-2 py-2 ${h.archived ? 'opacity-60' : ''}`}>
+              <li key={h.id} className={`flex items-center gap-2 py-1.5 ${h.archived ? 'opacity-60' : ''}`}>
                 <button type="button" onClick={() => onEdit(h)} className="press flex min-w-0 flex-1 items-center gap-2 text-left" aria-label={`${h.name} bearbeiten`}>
-                  <HabitIcon icon={h.icon} color={h.color} size={34} />
+                  <HabitIcon icon={h.icon} color={h.color} size={32} soft />
                   <span className="line-clamp-2 min-w-0 text-[13px] leading-tight font-semibold break-words">{h.name}</span>
                 </button>
                 <div className="flex shrink-0" style={{ gap }}>
                   {days.map((d) => {
                     const status = dayStatus(ctx, d, data.today)
                     const value = ctx.values.get(d) ?? 0
-                    const disabled = d < h.start_date || d > data.today || h.archived
+                    const disabled = d > data.today || h.archived
                     return (
                       <DayCell
                         key={d}
@@ -126,7 +126,7 @@ export function WeekView({ habits, prefs, update, onEdit, onDay }: Props) {
           })}
         </ul>
       </div>
-      <p className="px-2 text-center text-xs text-muted">Tippen schaltet den Tag um · lange drücken für Wert und Notiz</p>
+      <p className="px-2 text-center text-xs text-muted">Tippen schaltet den Tag um – auch rückwirkend · lange drücken für Wert und Notiz</p>
     </div>
   )
 }

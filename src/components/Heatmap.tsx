@@ -1,7 +1,8 @@
 // Heatmap der letzten Wochen: pro Woche eine Spalte (Mo–So), kleine abgerundete Quadrate.
+// Leere Felder tragen einen hellen Ton der Gewohnheitsfarbe. Antippen öffnet den Kalender zum Nachtragen.
 import { useMemo } from 'react'
 import { addDays, endOfWeek, formatDateDE } from '../lib/dates'
-import { colorHex, onColor } from '../lib/catalog'
+import { cellLook, colorHex } from '../lib/catalog'
 import { dayStatus, type HabitContext } from '../lib/schedule'
 import type { DateStr } from '../lib/types'
 
@@ -9,12 +10,14 @@ export function Heatmap({
   ctx,
   color,
   today,
-  weeks = 14,
+  weeks = 26,
+  onOpen,
 }: {
   ctx: HabitContext
   color: string
   today: DateStr
   weeks?: number
+  onOpen?: () => void
 }) {
   const hex = colorHex(color)
   const cols = useMemo(() => {
@@ -28,31 +31,23 @@ export function Heatmap({
     )
   }, [ctx, today, weeks])
 
-  return (
-    <div className="flex gap-[3px]" role="img" aria-label={`Verlauf der letzten ${weeks} Wochen`}>
+  const body = (
+    <div className="flex gap-[2.5px]" aria-hidden={onOpen ? undefined : true}>
       {cols.map((col, i) => (
-        <div key={i} className="flex min-w-0 flex-1 flex-col gap-[3px]">
+        <div key={i} className="flex min-w-0 flex-1 flex-col gap-[2.5px]">
           {col.map(({ date, status, value }) => {
-            let bg = 'var(--soft)'
-            let border = 'none'
-            if (status === 'done') bg = hex
-            else if (status === 'partial') bg = `color-mix(in srgb, ${hex} 38%, var(--soft))`
-            else if (status === 'neutral') {
-              bg = 'transparent'
-              border = '1px dashed var(--line)'
-            } else if (status === 'future') {
-              bg = 'transparent'
-            }
+            const look = cellLook(status, hex)
             const relapse = ctx.habit.type === 'quit' && status === 'missed'
+            const beforeStart = date < ctx.habit.start_date
             return (
               <span
                 key={date}
                 title={`${formatDateDE(date)}${value ? ` · ${value}` : ''}`}
-                className="grid aspect-square w-full place-items-center rounded-[28%] text-[8px] leading-none font-bold"
+                className="grid aspect-square w-full place-items-center rounded-[32%] text-[7px] leading-none font-bold"
                 style={{
-                  background: bg,
-                  border,
-                  color: status === 'done' ? onColor(hex) : 'var(--muted)',
+                  background: beforeStart ? 'transparent' : look.background,
+                  border: !beforeStart && status === 'neutral' ? '1px dashed var(--line)' : 'none',
+                  color: look.color,
                   outline: date === today ? `1.5px solid ${hex}` : undefined,
                   outlineOffset: date === today ? 1 : undefined,
                 }}
@@ -64,5 +59,12 @@ export function Heatmap({
         </div>
       ))}
     </div>
+  )
+
+  if (!onOpen) return body
+  return (
+    <button type="button" onClick={onOpen} aria-label="Verlauf öffnen und Tage nachtragen" className="block w-full text-left active:opacity-80">
+      {body}
+    </button>
   )
 }

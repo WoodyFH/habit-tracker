@@ -73,8 +73,11 @@ funktioniert offline und synchronisiert sich zwischen deinen Geräten. Die Oberf
 
 ## So funktioniert die App
 
-- **Ansichten:** Karten (Abhaken-Button + Heatmap), Wochenliste (5–7 Tage, rückwirkend umschaltbar, blätterbar),
+- **Ansichten:** Karten (Abhaken-Button + Heatmap), Wochenliste (5–7 Tage, blätterbar),
   Tabelle (Tage oder Wochen, horizontal scrollbar). Tippen schaltet einen Tag um, **langes Drücken** öffnet Wert und Notiz.
+- **Vergangene Tage nachtragen:** In der Wochenliste und Tabelle einfach den Tag antippen. Auf der Karte öffnet ein Tipp
+  auf die Heatmap einen Monatskalender. Liegt ein Tag vor dem Startdatum, wird der Start automatisch auf diesen Tag vorgezogen.
+- **Darstellung:** Einstellungen → Darstellung: Automatisch (System), Hell oder Dunkel (gilt pro Gerät).
 - **Oben:** Einstellungen, Filter (Kategorien, nur heute fällige, archivierte), Statistik, „+“. Darunter Kategorie-Chips.
 - **Reihenfolge ändern:** Filter oder Einstellungen → „Reihenfolge ändern“ → am Griff ziehen.
 - **Keine Erinnerungen / Push-Nachrichten** – bewusst nicht enthalten.
@@ -117,7 +120,8 @@ Die gesamte Logik steckt in reinen, getesteten Funktionen: `src/lib/dates.ts`, `
 - Der Sync-Status steht dezent unter dem Titel (offline / synchronisiert / Fehler, ggf. „n offen“).
 - **Abmelden** entfernt die lokalen Daten vom Gerät (der Server behält alles). Gibt es noch nicht synchronisierte Änderungen,
   wirst du gewarnt.
-- Ohne Supabase-Konfiguration startet die App im **Nur-lokal-Modus** (Hinweis in den Einstellungen). Meldest du dich später an,
+- Ohne Supabase-Konfiguration startet die App im **Nur-lokal-Modus** (erkennbar am orangen Punkt „Nur lokal“ oben und daran,
+  dass **keine Anmeldung** verlangt wird; dann fehlen die GitHub-Secrets, Schritt 9) (Hinweis in den Einstellungen). Meldest du dich später an,
   werden diese Daten deinem Konto zugeordnet und hochgeladen.
 
 ### Export / Import

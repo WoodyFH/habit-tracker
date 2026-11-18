@@ -235,7 +235,7 @@ function EditorInner({ habit, open, onClose }: Props) {
         </div>
       }
     >
-      <div className="space-y-6" style={{ ['--ring' as string]: hex }}>
+      <div className="min-w-0 space-y-5" style={{ ['--ring' as string]: hex }}>
         {/* Icon + Name */}
         <div className="flex items-center gap-3">
           <button
@@ -278,7 +278,7 @@ function EditorInner({ habit, open, onClose }: Props) {
                   set('icon', key)
                   setIconOpen(false)
                 }}
-                className={cx('press grid aspect-square place-items-center rounded-2xl', f.icon === key ? 'text-white' : 'bg-card text-ink')}
+                className={cx('press grid aspect-square place-items-center rounded-2xl', f.icon === key ? 'text-white' : 'bg-soft-raw text-ink')}
                 style={f.icon === key ? { background: hex, color: fg } : undefined}
               >
                 <I size={20} />
@@ -423,7 +423,7 @@ function EditorInner({ habit, open, onClose }: Props) {
                   placeholder="Einheit (optional), z. B. Gläser"
                   aria-label="Einheit"
                   maxLength={20}
-                  className="bg-card"
+                  className="!bg-soft-raw"
                 />
               </div>
             )}
@@ -468,12 +468,12 @@ function EditorInner({ habit, open, onClose }: Props) {
 
         {/* Zeitraum */}
         <Field label="Zeitraum">
-          <div className="grid grid-cols-2 gap-3">
-            <label className="space-y-1">
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-3">
+            <label className="min-w-0 space-y-1">
               <span className="text-xs font-medium text-muted">Start</span>
               <TextInput type="date" value={f.start_date} onChange={(e) => set('start_date', e.target.value)} />
             </label>
-            <label className="space-y-1">
+            <label className="min-w-0 space-y-1">
               <span className="text-xs font-medium text-muted">Ende (optional)</span>
               <div className="relative">
                 <TextInput type="date" value={f.end_date} min={f.start_date} onChange={(e) => set('end_date', e.target.value)} className={f.end_date ? 'pr-11' : ''} />
@@ -501,15 +501,15 @@ function EditorInner({ habit, open, onClose }: Props) {
               </p>
               <div className="space-y-2">
                 {pauses.map((p) => (
-                  <div key={p.id} className="flex items-center gap-2 rounded-2xl bg-soft p-2.5">
-                    <PauseCircle size={20} className="ml-1 shrink-0 text-muted" />
+                  <div key={p.id} className="flex min-w-0 items-center gap-1.5 rounded-2xl bg-soft p-2">
+                    <PauseCircle size={18} className="ml-0.5 shrink-0 text-muted" />
                     <input
                       type="date"
                       aria-label="Pause von"
                       value={p.from_date}
                       max={p.to_date}
                       onChange={(e) => e.target.value && void updatePause(p.id, e.target.value, p.to_date)}
-                      className="h-10 min-w-0 flex-1 rounded-xl bg-card px-2 text-sm outline-none"
+                      className="h-10 min-w-0 flex-1 rounded-xl bg-soft-raw px-2 text-sm outline-none"
                     />
                     <span className="text-muted">–</span>
                     <input
@@ -518,10 +518,10 @@ function EditorInner({ habit, open, onClose }: Props) {
                       value={p.to_date}
                       min={p.from_date}
                       onChange={(e) => e.target.value && void updatePause(p.id, p.from_date, e.target.value)}
-                      className="h-10 min-w-0 flex-1 rounded-xl bg-card px-2 text-sm outline-none"
+                      className="h-10 min-w-0 flex-1 rounded-xl bg-soft-raw px-2 text-sm outline-none"
                     />
-                    <button type="button" aria-label="Pause löschen" onClick={() => removePause(p.id)} className="press grid size-10 shrink-0 place-items-center rounded-xl bg-card text-muted">
-                      <Trash2 size={17} />
+                    <button type="button" aria-label="Pause löschen" onClick={() => removePause(p.id)} className="press grid size-9 shrink-0 place-items-center rounded-xl bg-soft-raw text-muted">
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 ))}

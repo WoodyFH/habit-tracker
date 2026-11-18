@@ -83,6 +83,17 @@ describe('lokale Schreibzugriffe', () => {
     expect(row?.deleted_at).toBeTruthy()
   })
 
+  it('Rückwirkend eintragen zieht das Startdatum vor', async () => {
+    const id = await createHabit({ ...habitInput, start_date: '2026-03-10' })
+    await setCompletion(id, '2026-03-05', 1)
+    expect((await db.habits.get(id))!.start_date).toBe('2026-03-05')
+    expect((await db.habits.get(id))!._dirty).toBe(1)
+    // spätere Tage ändern den Start nicht, Löschen auch nicht
+    await setCompletion(id, '2026-03-12', 1)
+    await setCompletion(id, '2026-03-05', 0)
+    expect((await db.habits.get(id))!.start_date).toBe('2026-03-05')
+  })
+
   it('Notiz ohne Wert behält die Zeile', async () => {
     const id = await createHabit(habitInput)
     await setCompletion(id, '2026-03-02', 0, 'nur eine Notiz')

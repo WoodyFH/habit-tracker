@@ -97,11 +97,11 @@ export function TableView({ habits, prefs, update, onEdit, onDay }: Props) {
         />
       </div>
 
-      <div className="rounded-[28px] bg-card shadow-card">
+      <div className="rounded-3xl bg-card shadow-card">
         {habits.length === 0 ? (
           <p className="py-12 text-center text-sm text-muted">Keine Gewohnheiten zum Anzeigen.</p>
         ) : (
-          <div ref={scroller} className="no-scrollbar overflow-x-auto overscroll-x-contain rounded-[28px]" tabIndex={0} aria-label="Tabelle, horizontal scrollbar">
+          <div ref={scroller} className="no-scrollbar overflow-x-auto overscroll-x-contain rounded-3xl" tabIndex={0} aria-label="Tabelle, horizontal scrollbar">
             <table className="border-separate" style={{ borderSpacing: 0 }}>
               <thead>
                 <tr>
@@ -144,7 +144,7 @@ export function TableView({ habits, prefs, update, onEdit, onDay }: Props) {
                     <tr key={h.id} className={h.archived ? 'opacity-60' : ''}>
                       <th scope="row" className="sticky left-0 z-10 bg-card py-1 pr-2 pl-3 text-left font-normal" style={{ minWidth: nameW, width: nameW }}>
                         <button type="button" onClick={() => onEdit(h)} className="press flex w-full min-w-0 items-center gap-2 text-left" aria-label={`${h.name} bearbeiten`}>
-                          <HabitIcon icon={h.icon} color={h.color} size={28} />
+                          <HabitIcon icon={h.icon} color={h.color} size={28} soft />
                           <span className="min-w-0 flex-1 truncate text-[12px] leading-tight font-semibold">{h.name}</span>
                         </button>
                       </th>
@@ -170,7 +170,7 @@ export function TableView({ habits, prefs, update, onEdit, onDay }: Props) {
                         }
                         const status = dayStatus(ctx, d, data.today)
                         const value = ctx.values.get(d) ?? 0
-                        const disabled = d < h.start_date || d > data.today || h.archived
+                        const disabled = d > data.today || h.archived
                         return (
                           <td key={d} className="py-[2px]" style={{ paddingLeft: pad, paddingRight: gap }}>
                             <DayCell

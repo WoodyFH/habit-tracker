@@ -15,7 +15,7 @@ type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 export function Button({ variant = 'soft', color, textColor, size = 'md', className, style, children, ...rest }: BtnProps) {
-  const sizes = { sm: 'h-9 px-3.5 text-sm', md: 'h-12 px-5 text-[15px]', lg: 'h-14 px-6 text-base' }
+  const sizes = { sm: 'h-9 px-3.5 text-sm', md: 'h-11 px-5 text-[15px]', lg: 'h-12 px-6 text-[15px]' }
   const base = 'press inline-flex items-center justify-center gap-2 rounded-2xl font-semibold disabled:opacity-40 disabled:pointer-events-none select-none'
   const look =
     variant === 'solid'
@@ -48,7 +48,7 @@ export function IconButton({
       type="button"
       aria-label={label}
       title={label}
-      className={cx('press grid size-11 place-items-center rounded-full bg-card text-ink shadow-card disabled:opacity-40', className)}
+      className={cx('press grid size-10 place-items-center rounded-full bg-card text-ink shadow-card disabled:opacity-40', className)}
       {...rest}
     >
       {children}
@@ -68,7 +68,7 @@ export function Chip({
       type="button"
       aria-pressed={active}
       className={cx(
-        'press inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-semibold select-none',
+        'press inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13.5px] font-semibold select-none',
         active ? 'shadow-sm' : 'bg-card text-ink shadow-card',
       )}
       style={active ? { background: color ?? '#6366f1', color: textColor ?? '#fff' } : undefined}
@@ -106,10 +106,10 @@ export function Segmented<T extends string>({
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={cx(
-              'press flex h-10 min-w-0 flex-1 items-center justify-center rounded-xl px-2 text-sm font-semibold',
+              'press flex h-9 min-w-0 flex-1 items-center justify-center rounded-xl px-2 text-[13.5px] font-semibold',
               active ? 'shadow-sm' : 'text-muted',
             )}
-            style={active ? { background: color ?? 'var(--card)', color: color ? (textColor ?? '#fff') : 'var(--ink)' } : undefined}
+            style={active ? { background: color ?? 'var(--seg)', color: color ? (textColor ?? '#fff') : 'var(--ink)' } : undefined}
           >
             <span className="truncate">{o.label}</span>
           </button>
@@ -158,7 +158,7 @@ export function Stepper({
       <button
         type="button"
         aria-label="Weniger"
-        className="press grid size-11 place-items-center rounded-2xl bg-soft disabled:opacity-40"
+        className="press grid size-10 place-items-center rounded-xl bg-soft-raw disabled:opacity-40"
         disabled={value <= min}
         onClick={() => onChange(Math.max(min, value - step))}
       >
@@ -171,7 +171,7 @@ export function Stepper({
       <button
         type="button"
         aria-label="Mehr"
-        className="press grid size-11 place-items-center rounded-2xl text-white disabled:opacity-40"
+        className="press grid size-10 place-items-center rounded-xl text-white disabled:opacity-40"
         style={{ background: color ?? '#6366f1' }}
         disabled={value >= max}
         onClick={() => onChange(Math.min(max, value + step))}
@@ -186,7 +186,7 @@ export function TextInput({ className, ...rest }: InputHTMLAttributes<HTMLInputE
   return (
     <input
       className={cx(
-        'h-12 w-full rounded-2xl bg-soft px-4 text-ink placeholder:text-muted/70 outline-none focus:ring-2 focus:ring-[var(--ring,#6366f1)]',
+        'h-11 w-full min-w-0 rounded-2xl bg-soft px-4 text-ink placeholder:text-muted/70 outline-none focus:ring-2 focus:ring-[var(--ring,#6366f1)]',
         className,
       )}
       {...rest}
@@ -198,7 +198,7 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-[13px] font-semibold tracking-wide text-muted uppercase">{label}</span>
+        <span className="pl-1 text-[12px] font-semibold tracking-wider text-muted uppercase">{label}</span>
         {hint && <span className="text-xs text-muted">{hint}</span>}
       </div>
       {children}
@@ -207,5 +207,5 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
 }
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cx('rounded-[28px] bg-card shadow-card', className)}>{children}</div>
+  return <div className={cx('rounded-3xl bg-card shadow-card', className)}>{children}</div>
 }

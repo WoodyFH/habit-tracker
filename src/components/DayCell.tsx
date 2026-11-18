@@ -3,7 +3,7 @@
 //  neutral (nicht fällig / Pause / außerhalb) → gestrichelt, zählt nie als verpasst · future → blass
 import { Check, X } from 'lucide-react'
 import { useRef } from 'react'
-import { onColor } from '../lib/catalog'
+import { cellLook } from '../lib/catalog'
 import type { DayStatus } from '../lib/schedule'
 import { cx } from './ui'
 
@@ -68,22 +68,7 @@ export function DayCell({ status, color, size = 36, radius, isToday, value, show
   const interactive = status !== 'future' && (onTap || onLongPress)
   const r = radius ?? Math.round(size * 0.32)
 
-  let bg = 'var(--soft)'
-  let fg = 'var(--muted)'
-  let border = 'none'
-  if (status === 'done') {
-    bg = color
-    fg = onColor(color)
-  } else if (status === 'partial') {
-    bg = `color-mix(in srgb, ${color} 38%, var(--soft))`
-    fg = 'var(--ink)'
-  } else if (status === 'neutral') {
-    bg = 'transparent'
-    border = '1.5px dashed var(--line)'
-  } else if (status === 'future') {
-    bg = 'transparent'
-    border = '1.5px solid var(--soft)'
-  }
+  const look = cellLook(status, color)
 
   const content =
     status === 'done' ? (
@@ -102,9 +87,9 @@ export function DayCell({ status, color, size = 36, radius, isToday, value, show
     width: size,
     height: size,
     borderRadius: r,
-    background: bg,
-    color: fg,
-    border,
+    background: look.background,
+    color: look.color,
+    border: look.border,
     outline: isToday ? `2px solid ${color}` : undefined,
     outlineOffset: isToday ? 2 : undefined,
   } as const
