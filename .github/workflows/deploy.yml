@@ -25,6 +25,16 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Base-URL bestimmen
+        id: base
+        # Projekt-Seite: https://<user>.github.io/<repo>/  →  Base = /<repo>/
+        # User-Seite (Repo heißt <user>.github.io)        →  Base = /
+        run: |
+          repo="${GITHUB_REPOSITORY#*/}"
+          if [[ "$repo" == *.github.io ]]; then base="/"; else base="/${repo}/"; fi
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          echo "Base-URL: $base"
+
       - name: Abhängigkeiten installieren
         run: npm ci
 
@@ -37,9 +47,12 @@ jobs:
           # Nur öffentliche Werte: Projekt-URL und anon (public) Key – niemals den service_role Key!
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          # Base-URL = Repo-Name (https://<user>.github.io/<repo>/).
-          # Bei einer User-Seite (<user>.github.io) die Repository-Variable VITE_BASE auf "/" setzen.
-          VITE_BASE: ${{ vars.VITE_BASE || format('/{0}/', github.event.repository.name) }}
+          VITE_BASE: ${{ steps.base.outputs.base }}
+
+      - name: Prüfen, ob die Base-URL im Build steckt
+        run: |
+          base="${{ steps.base.outputs.base }}"
+          grep -q "src=\"${base}assets/" dist/index.html || { echo "Base-URL ${base} fehlt in dist/index.html"; cat dist/index.html; exit 1; }
 
       - uses: actions/upload-pages-artifact@v3
         with:

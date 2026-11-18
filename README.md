@@ -55,8 +55,7 @@ funktioniert offline und synchronisiert sich zwischen deinen Geräten. Die Oberf
 11. **Deployment starten.** Der erste `git push` auf `main` startet den Workflow bereits (Reiter **Actions**; sonst dort
     **Deploy auf GitHub Pages → Run workflow**). Nach ca. 1–2 Minuten ist die App unter
     `https://DEIN-NAME.github.io/habit-tracker/` erreichbar.
-    - Heißt dein Repo `DEIN-NAME.github.io` (User-Seite), lege unter **Settings → Secrets and variables → Actions → Variables**
-      eine Variable `VITE_BASE` mit dem Wert `/` an.
+    - Die Base-URL (`/habit-tracker/`) bestimmt der Workflow automatisch aus dem Repo-Namen; eine Repository-Variable ist nicht nötig.
     - Der Workflow führt vor dem Build die Unit-Tests aus; schlagen sie fehl, wird nicht veröffentlicht.
 
 ### Teil C – App installieren
