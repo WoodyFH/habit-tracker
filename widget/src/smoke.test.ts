@@ -69,6 +69,12 @@ interface Opts {
   token?: { token: string; expiresAt: number }
   files?: Map<string, string>
   respond?: (url: string, method: string) => { status: number; body: any } | 'network-error'
+  /** true = Start in der Scriptable-App (Einrichtung/Menü) statt im Widget */
+  inApp?: boolean
+  /** Antworten der Dialoge in der App (Reihenfolge) */
+  alertChoices?: number[]
+  sheetChoices?: number[]
+  fields?: string[]
 }
 
 const ROWS = {
@@ -91,6 +97,8 @@ function defaultRespond(url: string, method: string) {
 
 async function runScript(opts: Opts = {}) {
   const widgets: Node[] = []
+  const presented: string[] = []
+  const alertsShown: string[] = []
   const requests: Array<{ url: string; method?: string; headers?: Record<string, string> }> = []
   const keychain = new Map<string, string>()
   if (opts.creds !== false) {
@@ -124,6 +132,12 @@ async function runScript(opts: Opts = {}) {
       constructor() {
         super('widget')
       }
+      async presentSmall() {
+        presented.push('small')
+      }
+      async presentMedium() {
+        presented.push('medium')
+      }
     },
     Color: class {
       hex: string
@@ -144,13 +158,16 @@ async function runScript(opts: Opts = {}) {
       }
     },
     Script: { setWidget: (w: Node) => widgets.push(w), complete: () => {} },
-    config: { runsInWidget: true, widgetFamily: opts.family ?? 'small' },
+    config: { runsInWidget: !opts.inApp, widgetFamily: opts.family ?? 'small' },
     Request: FakeRequest,
     Keychain: {
       contains: (k: string) => keychain.has(k),
       get: (k: string) => keychain.get(k),
       set: (k: string, v: string) => void keychain.set(k, v),
-      remove: (k: string) => void keychain.delete(k),
+      remove: (k: string) => {
+        if (!keychain.has(k)) throw new Error(`the key '${k}' does not exist in the keychain`)
+        keychain.delete(k)
+      },
     },
     FileManager: {
       local: () => ({
@@ -162,12 +179,33 @@ async function runScript(opts: Opts = {}) {
         remove: (p: string) => void files.delete(p),
       }),
     },
-    Alert: class {},
+    Alert: class {
+      title = ''
+      message = ''
+      addTextField() {}
+      addSecureTextField() {}
+      addAction() {}
+      addCancelAction() {}
+      addDestructiveAction() {}
+      textFieldValue(i: number) {
+        return (opts.fields ?? [])[i] ?? ''
+      }
+      async presentAlert() {
+        alertsShown.push(this.title)
+        const c = (opts.alertChoices ?? []).shift()
+        return c ?? 0
+      }
+      async presentSheet() {
+        alertsShown.push(this.title)
+        const c = (opts.sheetChoices ?? []).shift()
+        return c ?? -1
+      }
+    },
   }
 
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
   await new AsyncFunction(...Object.keys(env), script)(...Object.values(env))
-  return { widgets, requests, keychain, files }
+  return { widgets, requests, keychain, files, presented, alertsShown }
 }
 
 const texts = (w: Node) => walk(w).filter((n) => n.kind === 'text').map((n) => n.text as string)
@@ -254,6 +292,47 @@ describe('Widget-Skript (Rauchtest mit Scriptable-Attrappe)', () => {
     const files = new Map<string, string>()
     await runScript({ files })
     const { widgets } = await runScript({ files, respond: (url) => (url.includes('/auth/v1/token') ? { status: 400, body: { error_description: 'Invalid login credentials' } } : { status: 200, body: [] }) })
+    expect(texts(widgets[0])).toContain('Anmeldung nötig')
+  })
+
+  it('Einrichtung in der App: Zugangsdaten speichern (ohne vorhandenen Token) und Vorschau zeigen', async () => {
+    const { presented, keychain, alertsShown, requests } = await runScript({
+      inApp: true,
+      creds: false,
+      fields: ['me@example.com', 'geheim'],
+      alertChoices: [0], // "Speichern"
+      sheetChoices: [0, 1, 4], // Vorschau klein, Vorschau mittel, Schließen
+    })
+    expect(keychain.get('habit-widget:email')).toBe('me@example.com')
+    expect(keychain.get('habit-widget:password')).toBe('geheim')
+    expect(alertsShown[0]).toBe('Habit Tracker anmelden')
+    expect(presented).toEqual(['small', 'medium'])
+    expect(requests.some((r) => r.url.includes('/auth/v1/token'))).toBe(true)
+  })
+
+  it('Zugangsdaten ändern, wenn schon ein Token existiert, und anschließend löschen', async () => {
+    const { keychain, files } = await runScript({
+      inApp: true,
+      token: { token: 'ALT', expiresAt: Date.now() + 600_000 },
+      fields: ['neu@example.com', 'neues-passwort'],
+      alertChoices: [0, 0], // Speichern, dann OK-Hinweis nach dem Löschen
+      sheetChoices: [2, 3], // Zugangsdaten ändern, Zugangsdaten löschen
+    })
+    expect(keychain.size).toBe(0)
+    expect(files.size).toBe(0)
+  })
+
+  it('Einrichtung abbrechen schreibt nichts', async () => {
+    const { keychain } = await runScript({ inApp: true, creds: false, fields: ['x@y.z', 'pw'], alertChoices: [1] })
+    expect(keychain.size).toBe(0)
+  })
+
+  it('abgelaufene Anmeldung (401) entfernt den Token ohne Fehler', async () => {
+    const { widgets, keychain } = await runScript({
+      token: { token: 'ALT', expiresAt: Date.now() + 600_000 },
+      respond: (url, m) => (url.includes('/rest/v1/') ? { status: 401, body: { message: 'JWT expired' } } : defaultRespond(url, m)),
+    })
+    expect(keychain.has('habit-widget:token')).toBe(false)
     expect(texts(widgets[0])).toContain('Anmeldung nötig')
   })
 

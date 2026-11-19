@@ -61,6 +61,11 @@ function styleSegment(el: any, s: WidgetSegment) {
 
 class AuthError extends Error {}
 
+/** Keychain.remove wirft einen Fehler, wenn der Schlüssel nicht existiert – deshalb vorher prüfen. */
+function removeKey(key: string) {
+  if (Keychain.contains(key)) Keychain.remove(key)
+}
+
 /** Scriptables eigene Request-Klasse (heißt wie der Browser-Typ, deshalb hier als any). */
 const makeRequest = (url: string): any => new (Request as any)(url)
 
@@ -112,7 +117,7 @@ async function fetchRows(path: string, token: string): Promise<any[]> {
     const rows = await req.loadJSON()
     const status = req.response?.statusCode
     if (status === 401) {
-      Keychain.remove(KEY.token)
+      removeKey(KEY.token)
       throw new AuthError('Anmeldung abgelaufen.')
     }
     if (status !== 200 && status !== 206) throw new Error((rows && (rows.message || rows.error)) || 'Daten konnten nicht geladen werden (' + status + ')')
@@ -342,12 +347,12 @@ async function askCredentials(): Promise<boolean> {
   if (!email || !password) return false
   Keychain.set(KEY.email, email)
   Keychain.set(KEY.password, password)
-  Keychain.remove(KEY.token)
+  removeKey(KEY.token)
   return true
 }
 
 function clearCredentials() {
-  for (const k of Object.values(KEY)) if (Keychain.contains(k)) Keychain.remove(k)
+  for (const k of Object.values(KEY)) removeKey(k)
   try {
     const fm = FileManager.local()
     if (fm.fileExists(cachePath())) fm.remove(cachePath())
