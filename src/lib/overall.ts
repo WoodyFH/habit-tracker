@@ -1,6 +1,6 @@
 // Gesamtübersicht über alle Gewohnheiten (reine Funktion).
 import type { HabitContext } from './schedule'
-import { todayInfo } from './schedule'
+import { todayStatus } from './todayStatus'
 import { computeStats, type HabitStats, type StreakUnit } from './streaks'
 import type { DateStr, Habit } from './types'
 
@@ -18,8 +18,6 @@ export interface OverallStats {
 export function computeOverall(habits: Habit[], ctxById: Map<string, HabitContext>, today: DateStr): OverallStats {
   const active = habits.filter((h) => !h.archived)
   const perHabit = new Map<string, HabitStats>()
-  let dueToday = 0
-  let doneToday = 0
   let totalCheckins = 0
   const rates: number[] = []
   let best: OverallStats['best'] = null
@@ -29,11 +27,6 @@ export function computeOverall(habits: Habit[], ctxById: Map<string, HabitContex
     if (!ctx) continue
     const s = computeStats(ctx, today)
     perHabit.set(h.id, s)
-    const info = todayInfo(ctx, today)
-    if (info.dueToday) {
-      dueToday++
-      if (info.state === 'done') doneToday++
-    }
     totalCheckins += s.total
     if (s.rate30 !== null) rates.push(s.rate30)
     // beste aktuelle Serie – nur Tage vergleichbar; Wochen/Monate zählen entsprechend mehr
@@ -46,6 +39,11 @@ export function computeOverall(habits: Habit[], ctxById: Map<string, HabitContex
     const ctx = ctxById.get(h.id)
     if (ctx) perHabit.set(h.id, computeStats(ctx, today))
   }
+
+  // Heute: verpflichtende + erledigte Gewohnheiten (Wochen-/Monatsziele nur, wenn sie heute sein müssen oder erledigt sind)
+  const today_ = todayStatus(habits, ctxById, today)
+  const dueToday = today_.total
+  const doneToday = today_.done
 
   return {
     habits: active.length,
