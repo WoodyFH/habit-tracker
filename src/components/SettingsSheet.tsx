@@ -1,8 +1,9 @@
-import { ArrowDownUp, CloudOff, Download, FileSpreadsheet, FileUp, LogOut, RefreshCw, Tags } from 'lucide-react'
+import { ArrowDownUp, CloudOff, Download, FileSpreadsheet, FileUp, LogOut, RefreshCw, Smartphone, Tags } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useAuth } from '../lib/auth'
 import { backupToCsv, buildBackup, downloadText, importBackup } from '../lib/exportImport'
-import { supabaseConfigProblem } from '../lib/supabase'
+import { supabaseConfigProblem, supabasePublicConfig } from '../lib/supabase'
+import { buildWidgetScript } from '../lib/widgetScript'
 import { syncNow } from '../lib/sync'
 import { todayStr } from '../lib/dates'
 import { useTheme } from '../lib/theme'
@@ -26,6 +27,30 @@ export function SettingsSheet({ open, onClose, onCategories, onReorder }: Props)
   const [theme, setTheme] = useTheme()
   const fileRef = useRef<HTMLInputElement>(null)
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
+
+  const [widgetMsg, setWidgetMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
+  const [widgetText, setWidgetText] = useState<string | null>(null)
+
+  async function copyWidget() {
+    setWidgetText(null)
+    if (!supabasePublicConfig) {
+      setWidgetMsg({ kind: 'err', text: 'Das Widget braucht eine Supabase-Verbindung.' })
+      return
+    }
+    try {
+      const script = buildWidgetScript({ ...supabasePublicConfig, appUrl: location.origin + import.meta.env.BASE_URL })
+      await navigator.clipboard.writeText(script)
+      setWidgetMsg({ kind: 'ok', text: 'Skript kopiert. Jetzt in Scriptable einfügen (Anleitung: README, Teil D).' })
+    } catch {
+      // Zwischenablage nicht erlaubt: Text zum manuellen Kopieren anzeigen
+      try {
+        setWidgetText(buildWidgetScript({ ...supabasePublicConfig, appUrl: location.origin + import.meta.env.BASE_URL }))
+        setWidgetMsg({ kind: 'err', text: 'Automatisches Kopieren ging nicht. Tippe in das Feld, wähle alles aus und kopiere es.' })
+      } catch (e) {
+        setWidgetMsg({ kind: 'err', text: (e as Error).message })
+      }
+    }
+  }
 
   async function exportJson() {
     const b = await buildBackup()
@@ -131,6 +156,28 @@ export function SettingsSheet({ open, onClose, onCategories, onReorder }: Props)
             </Button>
           </div>
         </Field>
+
+        {!local && (
+          <Field label="iPhone-Widget" hint="Scriptable">
+            <div className="space-y-2.5 rounded-3xl bg-soft p-3.5">
+              <p className="text-[13px] leading-relaxed text-muted">
+                Zeigt dir die heutigen Gewohnheiten als Widget (klein und mittel). Du brauchst die kostenlose App „Scriptable“ auf dem iPhone.
+                Das Skript enthält nur die öffentliche Projekt-URL, nie dein Passwort.
+              </p>
+              <Button className="w-full !bg-soft-raw" onClick={() => void copyWidget()}>
+                <Smartphone size={18} /> Widget-Skript kopieren
+              </Button>
+              {widgetText && (
+                <textarea readOnly value={widgetText} rows={5} onFocus={(e) => e.currentTarget.select()} className="w-full resize-none rounded-2xl bg-soft-raw p-3 font-mono text-[11px] outline-none" aria-label="Widget-Skript" />
+              )}
+              {widgetMsg && (
+                <p role="status" className={`rounded-xl px-3 py-2 text-sm font-medium ${widgetMsg.kind === 'ok' ? 'bg-[#22c55e]/12 text-[#16a34a]' : 'bg-[#ef4444]/10 text-[#ef4444]'}`}>
+                  {widgetMsg.text}
+                </p>
+              )}
+            </div>
+          </Field>
+        )}
 
         <Field label="Daten sichern" hint="Backup">
           <div className="flex flex-col gap-2">

@@ -68,6 +68,35 @@ funktioniert offline und synchronisiert sich zwischen deinen Geräten. Die Oberf
 14. **Windows (Edge oder Chrome).** Adresse öffnen → in der Adressleiste auf das **Installieren**-Symbol klicken
     (Edge: **⋯ → Apps → Diese Website als App installieren**) → Anmelden.
 
+### Teil D – iPhone-Widget (optional, mit Scriptable)
+
+Ein Widget zeigt dir auf dem Home-Bildschirm, was heute noch offen ist: eine Zahl („3/5“) und pro Gewohnheit ein Feld
+(erledigt = Farbe, verpflichtend offen = weiß mit Rahmen, Wochen-/Monatsziel noch nicht zwingend = ganz hell).
+Es gibt zwei Größen: **klein** (Quadrate) und **mittel** (Balken plus Liste „Noch offen“).
+
+15. **Scriptable installieren.** Im App Store die kostenlose App **Scriptable** laden.
+16. **Skript kopieren.** Öffne den Habit Tracker (dort, wo du angemeldet bist) → **Einstellungen** → **iPhone-Widget** →
+    **Widget-Skript kopieren**. Es erscheint „Skript kopiert“. (Der Knopf ist nur sichtbar, wenn du angemeldet bist.)
+17. **In Scriptable einfügen.** Scriptable öffnen → oben rechts **+** (neues Skript) → in das leere Feld tippen und halten →
+    **Einsetzen**. Oben auf den Titel „Untitled Script“ tippen, **Habit Tracker** eintragen → **Fertig**.
+18. **Einmal starten und anmelden.** Tippe in der Skriptliste auf das Skript. Es fragt nach **E-Mail und Passwort**
+    deines Supabase-Nutzers (dieselben wie in der App) → **Speichern**. Das Passwort liegt nur im iOS-Schlüsselbund
+    und steht nie im Skript. Danach erscheint ein Menü: **Vorschau klein** und **Vorschau mittel** zeigen das Widget.
+19. **Widget auf den Home-Bildschirm.** Lange auf eine freie Stelle drücken → **+** oben links → **Scriptable** →
+    Größe **klein** oder **mittel** wählen → **Widget hinzufügen**. Dann das Widget lange antippen → **Widget bearbeiten**
+    → bei **Script** das Skript **Habit Tracker** wählen. Beim Punkt **When Interacting** am besten **Open URL** wählen.
+20. Fertig. iOS aktualisiert das Widget von selbst, meist alle 15 bis 60 Minuten. Es ist deshalb nicht sofort aktuell,
+    wenn du in der App etwas abhakst.
+
+Hinweise zum Widget:
+
+- Ein Tipp auf das Widget öffnet die Seite **in Safari**, nicht die installierte Home-Bildschirm-App (das lässt iOS nicht zu).
+  Die App öffnest du weiter über ihr Icon.
+- **Offline** zeigt das Widget die zuletzt geladenen Daten, mit dem Zusatz „· offline“.
+- **Passwort geändert?** Skript in Scriptable öffnen → **Zugangsdaten ändern**. Zum Entfernen: **Zugangsdaten löschen**.
+- **Nach einem App-Update** (z. B. wenn das Widget erweitert wurde) die Schritte 16 und 17 wiederholen und den alten Skript-Inhalt ersetzen.
+- Das Skript enthält nur deine öffentliche Projekt-URL und den anon key, wie die Web-App selbst.
+
 ---
 
 ## So funktioniert die App
@@ -152,9 +181,10 @@ npm test           # Unit-Tests (Vitest)
 npm run build      # Typprüfung + Produktions-Build nach dist/
 npm run preview    # Build lokal ansehen (inkl. Service Worker)
 npm run icons      # PNG-Icons aus dem SVG neu erzeugen
+npm run widget     # Scriptable-Widget-Skript neu bauen (läuft automatisch vor dev, build und test)
 ```
 
-Struktur: `src/lib` (Logik, Datenbank, Sync, Export), `src/components` (Sheets, Karten, Bausteine),
+Struktur: `src/lib` (Logik, Datenbank, Sync, Export), `widget` (Scriptable-Widget), `src/components` (Sheets, Karten, Bausteine),
 `src/views` (die drei Ansichten), `supabase/schema.sql`, `.github/workflows/deploy.yml`.
 
 ## Bekannte Einschränkungen

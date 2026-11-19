@@ -58,7 +58,7 @@ export default defineConfig(({ mode }) => {
     build: { target: 'es2022', sourcemap: false },
     test: {
       environment: 'node',
-      include: ['src/**/*.test.ts'],
+      include: ['src/**/*.test.ts', 'widget/**/*.test.ts'],
     },
   }
 })

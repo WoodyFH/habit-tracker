@@ -15,6 +15,9 @@ export const supabaseConfigProblem: 'secret-key' | null = keyIsSecret ? 'secret-
 
 export const isSupabaseConfigured = Boolean(url && rawKey && !keyIsSecret)
 
+/** Öffentliche Werte (Projekt-URL und anon key) – für das Scriptable-Widget. */
+export const supabasePublicConfig = isSupabaseConfigured ? { supabaseUrl: url!, anonKey: rawKey! } : null
+
 export const supabase = isSupabaseConfigured
   ? createClient(url!, rawKey!, {
       auth: {
